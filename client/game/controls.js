@@ -114,14 +114,18 @@ export class InputControls {
     if (this.keys.left) right -= 1;
     if (this.keys.right) right += 1;
 
-    if (forward === 0 && right === 0) {
-      return { x: 0, z: 0, angle: null };
-    }
-
     // Camera yaw: camera looking direction
     const yaw = this.cameraController.yaw;
     const sin = Math.sin(yaw);
     const cos = Math.cos(yaw);
+
+    // Forward angle where the camera is looking
+    const camForwardAngle = Math.atan2(-sin, -cos);
+
+    if (forward === 0 && right === 0) {
+      // When stationary, face the forward direction of the camera view
+      return { x: 0, z: 0, angle: camForwardAngle };
+    }
 
     // Forward vector in world space: (-sin, -cos)
     // Right vector in world space: (cos, -sin)

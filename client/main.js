@@ -194,7 +194,7 @@ class BeltPanicGame {
     });
 
     document.getElementById('hud-btn-leave').addEventListener('click', () => {
-      window.location.reload();
+      this._leaveGame();
     });
 
     // Game Over buttons
@@ -204,8 +204,35 @@ class BeltPanicGame {
     });
 
     document.getElementById('btn-back-menu').addEventListener('click', () => {
-      window.location.reload();
+      this._leaveGame();
     });
+
+    window.addEventListener('beforeunload', () => {
+      this.net.leaveRoom();
+    });
+  }
+
+  _leaveGame() {
+    this.net.leaveRoom();
+
+    // Clear all character meshes from Three.js scene so no ghosts linger!
+    for (const model of this.characters.values()) {
+      this.arena.scene.remove(model.root);
+    }
+    this.characters.clear();
+
+    this.localPlayerId = null;
+    this.lastState = null;
+    this.thirdPersonCam.setTarget(null);
+
+    // Hide all HUD and modal overlays
+    document.getElementById('game-hud').classList.add('hidden');
+    document.getElementById('game-over-modal').classList.add('hidden');
+    document.getElementById('hud-banner').classList.add('hidden');
+    document.getElementById('hud-steal-meter').classList.add('hidden');
+
+    // Show main menu cleanly
+    document.getElementById('main-menu').classList.remove('hidden');
   }
 
   _initCustomizerPreview() {
@@ -274,6 +301,20 @@ class BeltPanicGame {
 
   async _joinGame(roomId, playerName, autoBots = false) {
     try {
+      // Clear any previous character meshes from scene
+      for (const model of this.characters.values()) {
+        this.arena.scene.remove(model.root);
+      }
+      this.characters.clear();
+      this.localPlayerId = null;
+      this.lastState = null;
+
+      // Ensure all modals are closed
+      document.getElementById('game-over-modal').classList.add('hidden');
+      document.getElementById('customise-modal').classList.add('hidden');
+      document.getElementById('how-to-play-modal').classList.add('hidden');
+      document.getElementById('server-modal').classList.add('hidden');
+
       await this.net.connect();
       this.net.joinRoom(roomId, playerName, this.localSkin);
 
@@ -370,6 +411,14 @@ class BeltPanicGame {
 
     this.net.on('returned_to_lobby', () => {
       this.showBanner('RETURNED TO LOBBY', 'Waiting for host to start match...');
+    });
+
+    this.net.on('player_left', (playerId) => {
+      const charModel = this.characters.get(playerId);
+      if (charModel) {
+        this.arena.scene.remove(charModel.root);
+        this.characters.delete(playerId);
+      }
     });
   }
 

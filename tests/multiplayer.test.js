@@ -48,6 +48,13 @@ async function runTests() {
       try {
         const msg = JSON.parse(raw);
         if (msg.type === 'JOIN_ROOM') {
+          if (clientRoomMap.has(ws)) {
+            const oldInfo = clientRoomMap.get(ws);
+            const oldRoom = rooms.get(oldInfo.roomId);
+            if (oldRoom) oldRoom.removePlayer(oldInfo.playerId);
+            clientRoomMap.delete(ws);
+          }
+
           const roomId = (msg.roomId || 'DEFAULT').toUpperCase().trim();
           currentRoom = getOrCreateRoom(roomId);
           playerId = `p_test_${Math.random().toString(36).substr(2, 6)}`;
@@ -67,6 +74,13 @@ async function runTests() {
               players: Array.from(currentRoom.players.values()).map((p) => currentRoom._serializePlayer(p)),
             })
           );
+        } else if (msg.type === 'LEAVE_ROOM') {
+          if (clientRoomMap.has(ws)) {
+            const info = clientRoomMap.get(ws);
+            clientRoomMap.delete(ws);
+            const room = rooms.get(info.roomId);
+            if (room) room.removePlayer(info.playerId);
+          }
         } else if (msg.type === 'PLAYER_INPUT') {
           if (currentRoom && playerId) {
             currentRoom.setPlayerInput(playerId, msg.input);
@@ -317,8 +331,31 @@ async function runTests() {
     }
     console.log('✓ TEST 7 PASSED: Server gracefully handled hunter disconnect; belt returned to pedestal.');
 
+    // TEST 8: Leaving room and rejoining (zero ghost duplicates test)
+    console.log('\n[TEST 8] Testing leaving room and rejoining without duplicate ghosts...');
+    const initialCount = testRoom.players.size; // Alice, Bob, Daisy = 3
+    
+    // Alice leaves room
+    clients[0].ws.send(JSON.stringify({ type: 'LEAVE_ROOM' }));
+    await sleep(100);
+
+    if (testRoom.players.size !== initialCount - 1) {
+      throw new Error(`Expected ${initialCount - 1} players after Alice left, got ${testRoom.players.size}`);
+    }
+    console.log(`  ✓ Player left room; room size correctly reduced to ${testRoom.players.size}`);
+
+    // Alice rejoins the same room
+    clients[0].ws.send(JSON.stringify({ type: 'JOIN_ROOM', roomId: 'TEST_ROOM', name: 'Alice' }));
+    await sleep(100);
+
+    if (testRoom.players.size !== initialCount) {
+      throw new Error(`Expected ${initialCount} players after Alice rejoined, got ${testRoom.players.size}`);
+    }
+    console.log(`  ✓ Player rejoined room cleanly; room size is ${testRoom.players.size} with ZERO duplicates.`);
+    console.log('✓ TEST 8 PASSED: Room leaving and rejoining vanishes old character cleanly.');
+
     console.log('\n========================================');
-    console.log('🎉 ALL MULTIPLAYER AUTHORITATIVE TESTS PASSED (7/7)!');
+    console.log('🎉 ALL MULTIPLAYER AUTHORITATIVE TESTS PASSED (8/8)!');
     console.log('========================================');
   } finally {
     for (const c of clients) {

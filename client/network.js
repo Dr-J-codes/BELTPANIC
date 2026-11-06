@@ -140,6 +140,13 @@ export class NetworkClient {
     this.send('ADD_BOTS', { count });
   }
 
+  leaveRoom() {
+    this.send('LEAVE_ROOM');
+    this.localPlayerId = null;
+    this.currentRoomId = null;
+    this.stateBuffer = [];
+  }
+
   clearBots() {
     this.send('CLEAR_BOTS');
   }

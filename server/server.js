@@ -66,6 +66,23 @@ function broadcastToRoom(roomId, message) {
   }
 }
 
+function removeClientFromRoom(ws) {
+  if (clientRoomMap.has(ws)) {
+    const { roomId, playerId } = clientRoomMap.get(ws);
+    clientRoomMap.delete(ws);
+    const room = rooms.get(roomId);
+    if (room) {
+      console.log(`[Room ${roomId}] Player left/disconnected: ${playerId}`);
+      room.removePlayer(playerId);
+      if (room.players.size === 0) {
+        room.stopLoop();
+        rooms.delete(roomId);
+        console.log(`[Room ${roomId}] Closed empty room.`);
+      }
+    }
+  }
+}
+
 function getOrCreateRoom(roomId) {
   const normId = (roomId || 'default').toUpperCase().trim();
   if (!rooms.has(normId)) {
@@ -86,6 +103,9 @@ wss.on('connection', (ws) => {
 
       switch (msg.type) {
         case 'JOIN_ROOM': {
+          // If this socket was already in a room, remove old player first!
+          removeClientFromRoom(ws);
+
           const roomId = (msg.roomId || 'DEFAULT').toUpperCase().trim();
           currentRoom = getOrCreateRoom(roomId);
           playerId = `p_${Date.now().toString(36)}_${Math.random().toString(36).substr(2, 4)}`;
@@ -109,6 +129,14 @@ wss.on('connection', (ws) => {
             })
           );
           console.log(`[Room ${roomId}] Player joined: ${msg.name} (${playerId})`);
+          break;
+        }
+
+        case 'LEAVE_ROOM': {
+          removeClientFromRoom(ws);
+          currentRoom = null;
+          playerId = null;
+          ws.send(JSON.stringify({ type: 'LEFT_ROOM_SUCCESS' }));
           break;
         }
 
@@ -156,20 +184,9 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-    if (clientRoomMap.has(ws)) {
-      const { roomId, playerId } = clientRoomMap.get(ws);
-      clientRoomMap.delete(ws);
-      const room = rooms.get(roomId);
-      if (room) {
-        console.log(`[Room ${roomId}] Player disconnected: ${playerId}`);
-        room.removePlayer(playerId);
-        if (room.players.size === 0) {
-          room.stopLoop();
-          rooms.delete(roomId);
-          console.log(`[Room ${roomId}] Closed empty room.`);
-        }
-      }
-    }
+    removeClientFromRoom(ws);
+    currentRoom = null;
+    playerId = null;
   });
 
   ws.on('error', (err) => {

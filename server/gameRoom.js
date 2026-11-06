@@ -125,7 +125,9 @@ export class GameRoom {
         jump: Boolean(input.jump),
         swing: Boolean(input.swing),
         steal: Boolean(input.steal),
-        angle: Number(input.angle) || 0,
+        angle: (input.angle !== null && input.angle !== undefined && !isNaN(input.angle))
+          ? Number(input.angle)
+          : p.angle,
       };
     }
   }
@@ -374,21 +376,25 @@ export class GameRoom {
       } else {
         const speed = p.id === this.hunterId ? GAME_RULES.HUNTER_SPEED : GAME_RULES.PLAYER_SPEED;
         const inputLen = Math.hypot(p.input.x, p.input.z);
-        if (inputLen > 0.05) {
-          p.vx = (p.input.x / inputLen) * speed;
-          p.vz = (p.input.z / inputLen) * speed;
-        } else {
-          p.vx = 0;
-          p.vz = 0;
-        }
+        const targetVx = inputLen > 0.05 ? (p.input.x / inputLen) * speed : 0;
+        const targetVz = inputLen > 0.05 ? (p.input.z / inputLen) * speed : 0;
 
+        // Smooth acceleration and deceleration
+        const accel = p.isGrounded ? 32.0 : 14.0;
+        p.vx += (targetVx - p.vx) * Math.min(1.0, accel * dt);
+        p.vz += (targetVz - p.vz) * Math.min(1.0, accel * dt);
+
+        // Smooth character rotation toward input direction
         if (p.input.angle !== undefined && !isNaN(p.input.angle)) {
-          p.angle = p.input.angle;
+          let diff = (p.input.angle - p.angle) % (Math.PI * 2);
+          if (diff < -Math.PI) diff += Math.PI * 2;
+          if (diff > Math.PI) diff -= Math.PI * 2;
+          p.angle += diff * Math.min(1.0, 18.0 * dt);
         }
 
         // Jump
         if (p.input.jump && p.isGrounded) {
-          p.vy = 9.0;
+          p.vy = 9.5;
           p.isGrounded = false;
         }
       }
@@ -404,19 +410,20 @@ export class GameRoom {
         p.isGrounded = true;
       }
 
-      // X/Z Movement
+      // X Movement & Obstacle sliding
       p.x += p.vx * dt;
-      p.z += p.vz * dt;
+      this._resolveObstacleCollisions(p);
 
-      // Arena boundary collision
+      // Z Movement & Obstacle sliding
+      p.z += p.vz * dt;
+      this._resolveObstacleCollisions(p);
+
+      // Arena boundary collision with smooth sliding
       const bound = ARENA.HALF_SIZE - GAME_RULES.PLAYER_RADIUS;
       if (p.x < -bound) p.x = -bound;
       if (p.x > bound) p.x = bound;
       if (p.z < -bound) p.z = -bound;
       if (p.z > bound) p.z = bound;
-
-      // Obstacle collision resolution
-      this._resolveObstacleCollisions(p);
 
       // Central Pedestal collision & stepping
       const distToCenter = Math.hypot(p.x, p.z);
@@ -438,32 +445,44 @@ export class GameRoom {
       if (obs.type === 'cylinder') {
         const dx = p.x - obs.x;
         const dz = p.z - obs.z;
-        const dist = Math.hypot(dx, dz);
+        const distSq = dx * dx + dz * dz;
         const minDist = obs.radius + pr;
-        if (dist < minDist && dist > 0.001) {
-          p.x = obs.x + (dx / dist) * minDist;
-          p.z = obs.z + (dz / dist) * minDist;
+        if (distSq < minDist * minDist && distSq > 0.00001) {
+          const dist = Math.sqrt(distSq);
+          const pushOut = minDist - dist;
+          p.x += (dx / dist) * pushOut;
+          p.z += (dz / dist) * pushOut;
         }
       } else if (obs.type === 'box') {
-        const halfX = obs.sx / 2 + pr;
-        const halfZ = obs.sz / 2 + pr;
-        const minX = obs.x - halfX;
-        const maxX = obs.x + halfX;
-        const minZ = obs.z - halfZ;
-        const maxZ = obs.z + halfZ;
+        // Circle-AABB closest point projection for smooth rounded corner sliding
+        const halfX = obs.sx / 2;
+        const halfZ = obs.sz / 2;
+        const closestX = Math.max(obs.x - halfX, Math.min(obs.x + halfX, p.x));
+        const closestZ = Math.max(obs.z - halfZ, Math.min(obs.z + halfZ, p.z));
 
-        if (p.x > minX && p.x < maxX && p.z > minZ && p.z < maxZ) {
-          // Overlap detected: find closest exit edge
-          const leftOverlap = p.x - minX;
-          const rightOverlap = maxX - p.x;
-          const topOverlap = p.z - minZ;
-          const bottomOverlap = maxZ - p.z;
+        const dx = p.x - closestX;
+        const dz = p.z - closestZ;
+        const distSq = dx * dx + dz * dz;
 
-          const minOverlap = Math.min(leftOverlap, rightOverlap, topOverlap, bottomOverlap);
-          if (minOverlap === leftOverlap) p.x = minX;
-          else if (minOverlap === rightOverlap) p.x = maxX;
-          else if (minOverlap === topOverlap) p.z = minZ;
-          else p.z = maxZ;
+        if (distSq < pr * pr) {
+          if (distSq > 0.0001) {
+            const dist = Math.sqrt(distSq);
+            const pushOut = pr - dist;
+            p.x += (dx / dist) * pushOut;
+            p.z += (dz / dist) * pushOut;
+          } else {
+            // Player is inside the box: push out to shallowest edge
+            const left = p.x - (obs.x - halfX);
+            const right = (obs.x + halfX) - p.x;
+            const top = p.z - (obs.z - halfZ);
+            const bottom = (obs.z + halfZ) - p.z;
+            const min = Math.min(left, right, top, bottom);
+
+            if (min === left) p.x = obs.x - halfX - pr;
+            else if (min === right) p.x = obs.x + halfX + pr;
+            else if (min === top) p.z = obs.z - halfZ - pr;
+            else p.z = obs.z + halfZ + pr;
+          }
         }
       }
     }
