@@ -1,0 +1,30 @@
+{
+  "name": "beltpanic",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Belt Panic! - Colourful 3D Multiplayer Party Game",
+  "main": "server/server.js",
+  "scripts": {
+    "dev": "node server/server.js",
+    "build": "vite build",
+    "start": "node server/server.js",
+    "test": "node tests/multiplayer.test.js"
+  },
+  "keywords": [
+    "game",
+    "multiplayer",
+    "threejs",
+    "party-game"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.3.0",
+    "three": "^0.187.0",
+    "ws": "^8.22.1"
+  },
+  "devDependencies": {
+    "vite": "^8.3.6"
+  }
+}

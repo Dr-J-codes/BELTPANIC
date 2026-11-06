@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BELT PANIC! - Colourful 3D Multiplayer Party Game</title>
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <!-- 3D Canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- MAIN MENU OVERLAY -->
+    <div id="main-menu" class="overlay active">
+      <div class="menu-card">
+        <div class="title-container">
+          <h1 class="logo-text">BELT PANIC!</h1>
+          <p class="tagline">The Chaotic 3D Multiplayer Belt-Hunting Party Game</p>
+        </div>
+
+        <div class="menu-form">
+          <div class="input-group">
+            <label for="player-name">YOUR NICKNAME</label>
+            <input type="text" id="player-name" maxlength="12" value="BouncyHero" placeholder="Enter name..." />
+          </div>
+
+          <div class="input-group">
+            <label for="room-code">ROOM CODE</label>
+            <input type="text" id="room-code" maxlength="8" value="ARENA1" placeholder="Room code..." />
+          </div>
+
+          <div class="button-stack">
+            <button id="btn-play" class="btn btn-primary pulse">
+              <span class="btn-icon">⚡</span> PLAY NOW
+            </button>
+            <button id="btn-practice" class="btn btn-secondary">
+              <span class="btn-icon">🤖</span> PLAY WITH BOTS
+            </button>
+            <div class="button-row">
+              <button id="btn-customize" class="btn btn-info">
+                <span class="btn-icon">🎨</span> CUSTOMISE
+              </button>
+              <button id="btn-how-to-play" class="btn btn-warning">
+                <span class="btn-icon">❓</span> HOW TO PLAY
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="menu-footer">
+          <button id="btn-server-config" class="btn-server-pill" title="Server Settings">
+            <span class="server-status-dot"></span>
+            <span id="label-server-name">SERVER: AUTO</span>
+          </button>
+          <button id="btn-toggle-sound" class="btn-icon-circle" title="Toggle Sound">🔊</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVER CONFIG MODAL (FOR VERCEL -> RENDER) -->
+    <div id="server-modal" class="modal hidden">
+      <div class="modal-box">
+        <h2 class="modal-title">🌐 BACKEND SERVER CONFIG</h2>
+        <p style="font-size: 13px; color: #a0aec0; margin: 8px 0 16px; font-family: 'Nunito', sans-serif;">
+          When hosting on <strong>Vercel</strong>, enter your <strong>Render</strong> backend URL below (or configure <code>VITE_BACKEND_URL</code> in Vercel project settings).
+        </p>
+
+        <div class="input-group" style="margin-bottom: 14px;">
+          <label for="input-server-url">RENDER SERVER URL</label>
+          <input type="text" id="input-server-url" placeholder="https://beltpanic-backend.onrender.com" />
+        </div>
+
+        <div id="server-status-feedback" style="font-size: 13px; font-family: 'Nunito', sans-serif; margin-bottom: 14px; min-height: 22px;"></div>
+
+        <div class="button-row">
+          <button id="btn-test-server" class="btn btn-secondary">
+            <span class="btn-icon">⚡</span> TEST PING
+          </button>
+          <button id="btn-save-server" class="btn btn-primary">
+            <span class="btn-icon">💾</span> SAVE
+          </button>
+        </div>
+
+        <button id="btn-close-server" class="btn btn-small" style="margin-top: 16px; background: transparent; border: 1px solid #4a5568;">CANCEL</button>
+      </div>
+    </div>
+
+    <!-- CUSTOMISE SCREEN MODAL -->
+    <div id="customise-modal" class="modal">
+      <div class="modal-box customizer-box">
+        <h2 class="modal-title">🎨 CHARACTER CUSTOMISER</h2>
+        
+        <div class="customizer-layout">
+          <!-- 3D character preview container -->
+          <div class="preview-stage" id="custom-preview-stage">
+            <div class="stage-pedestal"></div>
+            <p class="preview-hint">Drag to rotate character</p>
+          </div>
+
+          <!-- Customizer options -->
+          <div class="custom-options">
+            <label class="section-label">CHOOSE COLOUR</label>
+            <div class="color-palette" id="color-palette">
+              <button class="color-swatch active" data-color="#ff477e" style="background:#ff477e"></button>
+              <button class="color-swatch" data-color="#00f5d4" style="background:#00f5d4"></button>
+              <button class="color-swatch" data-color="#06d6a0" style="background:#06d6a0"></button>
+              <button class="color-swatch" data-color="#ffd166" style="background:#ffd166"></button>
+              <button class="color-swatch" data-color="#8338ec" style="background:#8338ec"></button>
+              <button class="color-swatch" data-color="#fb5607" style="background:#fb5607"></button>
+              <button class="color-swatch" data-color="#ef233c" style="background:#ef233c"></button>
+              <button class="color-swatch" data-color="#118ab2" style="background:#118ab2"></button>
+            </div>
+
+            <label class="section-label">SELECT HAT</label>
+            <div class="hat-selection" id="hat-selection">
+              <button class="hat-card active" data-hat="party">🥳 Party</button>
+              <button class="hat-card" data-hat="crown">👑 Crown</button>
+              <button class="hat-card" data-hat="propeller">🚁 Propeller</button>
+              <button class="hat-card" data-hat="chef">👨‍🍳 Chef</button>
+              <button class="hat-card" data-hat="horns">😈 Horns</button>
+              <button class="hat-card" data-hat="beanie">🧢 Beanie</button>
+            </div>
+
+            <button id="btn-save-custom" class="btn btn-primary" style="margin-top: 15px;">DONE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOW TO PLAY MODAL -->
+    <div id="how-to-play-modal" class="modal">
+      <div class="modal-box">
+        <h2 class="modal-title">📖 HOW TO PLAY BELT PANIC!</h2>
+        
+        <div class="rules-grid">
+          <div class="rule-card">
+            <div class="rule-icon">🏃‍♂️</div>
+            <h3>1. The Belt Rush</h3>
+            <p>Rush to the central pedestal when the match starts! First to pick up the belt becomes the <strong>HUNTER</strong>.</p>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-icon">☀️</div>
+            <h3>2. Lights ON: Hunt!</h3>
+            <p>The Hunter chases survivors and swings with <strong>Left Click</strong> to tag and stun them for points!</p>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-icon">🌑</div>
+            <h3>3. Blackout: Steal!</h3>
+            <p>Lights turn OFF! Survivors sneak close to the Hunter and hold <strong>[E]</strong> for 1 second to steal the belt!</p>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-icon">⚠️</div>
+            <h3>4. Lights Return!</h3>
+            <p>Buzzer sounds! Lights slam ON, revealing the new Hunter! The cycle repeats until the match ends.</p>
+          </div>
+        </div>
+
+        <div class="controls-summary">
+          <strong>CONTROLS:</strong> [W,A,S,D] Move &bull; [SPACE] Jump &bull; [MOUSE] Look &bull; [LEFT CLICK] Belt Swing &bull; [HOLD E] Steal Belt
+        </div>
+
+        <button id="btn-close-how" class="btn btn-primary" style="margin-top: 18px;">GOT IT!</button>
+      </div>
+    </div>
+
+    <!-- IN-GAME HUD -->
+    <div id="game-hud" class="hud-container hidden">
+      <!-- TOP BAR -->
+      <div class="hud-top-bar">
+        <!-- Top Left: Players & Ping -->
+        <div class="hud-box hud-left">
+          <div class="hud-badge room-badge">
+            <span class="label">ROOM:</span>
+            <span id="hud-room-name">ARENA1</span>
+          </div>
+          <div class="hud-badge ping-badge">
+            <span class="ping-dot"></span>
+            <span id="hud-ping-ms">20ms</span>
+          </div>
+          <div class="hud-badge player-count-badge">
+            <span>👥</span>
+            <span id="hud-player-count">1/8</span>
+          </div>
+        </div>
+
+        <!-- Top Center: Phase & Timers -->
+        <div class="hud-box hud-center">
+          <div id="hud-phase-pill" class="phase-pill lights-on">
+            <span id="hud-phase-icon">☀️</span>
+            <span id="hud-phase-text">LIGHTS ON</span>
+          </div>
+          <div class="timer-display">
+            <span id="hud-phase-timer" class="phase-seconds">12s</span>
+            <span class="timer-divider">|</span>
+            <span class="match-time-label">MATCH:</span>
+            <span id="hud-match-timer">03:00</span>
+          </div>
+          <div class="phase-progress-bg">
+            <div id="hud-phase-bar" class="phase-progress-bar"></div>
+          </div>
+        </div>
+
+        <!-- Top Right: Current Hunter & Lobby Buttons -->
+        <div class="hud-box hud-right">
+          <div id="hud-hunter-card" class="hunter-card">
+            <span class="crown-icon">👑</span>
+            <div class="hunter-info">
+              <span class="hunter-label">HUNTER</span>
+              <span id="hud-hunter-name">Searching...</span>
+            </div>
+          </div>
+          <div class="lobby-action-buttons">
+            <button id="hud-btn-start" class="btn btn-small btn-success pulse">START MATCH</button>
+            <button id="hud-btn-bots" class="btn btn-small btn-secondary">+3 BOTS</button>
+            <button id="hud-btn-leave" class="btn btn-small btn-danger">LEAVE</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER POPUP BANNER NOTIFICATIONS -->
+      <div id="hud-banner" class="center-banner hidden">
+        <h2 id="hud-banner-title">WE HAVE A HUNTER!</h2>
+        <p id="hud-banner-sub">Player 1 grabbed the belt!</p>
+      </div>
+
+      <!-- STEAL PROGRESS METER -->
+      <div id="hud-steal-meter" class="steal-meter hidden">
+        <div class="steal-label">STEALING BELT...</div>
+        <div class="steal-bar-bg">
+          <div id="hud-steal-fill" class="steal-bar-fill"></div>
+        </div>
+      </div>
+
+      <!-- BOTTOM CONTEXTUAL INSTRUCTION BAR -->
+      <div class="hud-bottom-bar">
+        <div id="hud-context-prompt" class="context-pill">
+          <span class="prompt-key">LMB</span>
+          <span id="hud-context-text">SWING BELT</span>
+        </div>
+      </div>
+
+      <!-- LEADERBOARD FLYOUT (TAB) -->
+      <div id="hud-leaderboard" class="leaderboard-panel">
+        <div class="leaderboard-header">PLAYER RANKINGS</div>
+        <div id="hud-leaderboard-list" class="leaderboard-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- GAME OVER / VICTORY OVERLAY -->
+    <div id="game-over-modal" class="modal">
+      <div class="modal-box victory-box">
+        <h1 class="victory-title">🏆 MATCH OVER!</h1>
+        <div id="winner-banner" class="winner-display">
+          <div class="winner-trophy">👑</div>
+          <h2 id="winner-name">ChunkyHero</h2>
+          <p id="winner-sub">Belt Panic Champion!</p>
+        </div>
+
+        <div class="podium-leaderboard" id="game-over-leaderboard">
+          <!-- Leaderboard rows -->
+        </div>
+
+        <div class="button-row" style="margin-top: 20px;">
+          <button id="btn-play-again" class="btn btn-primary pulse">PLAY AGAIN</button>
+          <button id="btn-back-menu" class="btn btn-secondary">BACK TO MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
+

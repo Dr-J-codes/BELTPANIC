@@ -1,0 +1,569 @@
+# PROJECT: BELT PANIC!
+## Build a Colourful Third-Person Multiplayer Party Game
+
+Act as a senior 3D game developer, multiplayer engineer, gameplay designer, and UI/UX designer.
+
+Your task is to build a fully playable, colourful, cartoonish 3D multiplayer party game called **BELT PANIC!**
+
+The game should have the fun, chaotic atmosphere of Stumble Guys and Fall Guys, with original characters, original environments, and its own unique gameplay mechanics.
+
+IMPORTANT: This is NOT a horror game.
+
+The game should be bright, funny, colourful, goofy, and competitive.
+
+---
+
+# 1. GAME CONCEPT
+
+All players spawn together inside one enclosed arena room.
+
+In the exact centre of the room, there is a pedestal containing one special belt.
+
+Players rush towards the belt.
+
+Whoever picks up the belt becomes the HUNTER.
+
+The Hunter must chase and tag the other players using the belt.
+
+However, there is a twist:
+
+The room lights constantly switch ON and OFF.
+
+- When lights are ON, the Hunter hunts everyone.
+- When lights are OFF, survivors get an opportunity to hunt the Hunter and steal the belt.
+
+The player who steals the belt becomes the next Hunter when the lights turn back ON.
+
+This creates a continuous cycle of hunting, hiding, escaping, and stealing.
+
+The entire game should feel chaotic and unpredictable.
+
+# 2. CAMERA AND PLAYER PERSPECTIVE
+
+THIS IS A STRICT REQUIREMENT.
+
+Use a THIRD-PERSON CAMERA.
+
+Absolutely NO top-down camera.
+Absolutely NO first-person camera.
+Absolutely NO isometric camera.
+
+The camera must stay behind and slightly above the player's character, similar to third-person party games.
+
+Camera requirements:
+
+- Smooth third-person follow camera.
+- Mouse-controlled camera rotation.
+- Character visible at all times during normal gameplay.
+- Smooth camera movement.
+- Camera collision detection.
+- Camera should not pass through walls or objects.
+- Sensible camera distance.
+- Character should face the movement direction.
+- Smooth character rotation.
+- Slight camera smoothing when changing directions.
+
+The player should feel like they are directly controlling a little 3D character.
+
+# 3. CHARACTER DESIGN
+
+Create cute, chunky, colourful 3D characters.
+
+Visual inspiration:
+- Stumble Guys.
+- Fall Guys.
+- Toy-like low-poly characters.
+- Playful mobile multiplayer games.
+
+Character proportions:
+
+- Oversized rounded head.
+- Small rounded body.
+- Short arms.
+- Short legs.
+- Simple expressive eyes.
+- Bright colours.
+- Funny animations.
+
+Do NOT create realistic human characters.
+
+Every player should have a unique colour so they can easily distinguish one another.
+
+Create basic animations:
+
+- Idle.
+- Walking.
+- Running.
+- Jumping.
+- Landing.
+- Falling.
+- Getting hit.
+- Belt swinging.
+- Belt stealing.
+- Victory dance.
+- Funny stumble.
+
+Add exaggerated squash-and-stretch animations wherever appropriate.
+
+# 4. MAIN ARENA
+
+Create one colourful indoor arena.
+
+The arena should be compact, enclosed, and designed specifically for multiplayer chasing.
+
+The room should include:
+
+CENTRAL AREA:
+- One circular or square pedestal.
+- One clearly visible belt resting on top.
+- A small spotlight above the belt.
+- Enough open space around the pedestal for players to fight over it.
+
+ROOM PROPS:
+- Colourful lockers.
+- Large cardboard boxes.
+- Wooden crates.
+- Tables.
+- Shelves.
+- Cupboards.
+- Small movable objects.
+- Pillars.
+- Decorative plants.
+- Funny posters.
+- Ceiling lights.
+
+HIDING SPOTS:
+
+Players should be able to hide:
+- Behind crates.
+- Inside lockers.
+- Under certain tables.
+- Behind shelves.
+- Behind pillars.
+
+Make the environment visually interesting without overcrowding it.
+
+Use rounded geometry and bright materials.
+
+# 5. CORE GAMEPLAY MECHANICS
+
+## A. Starting the Match
+
+1. All players enter the same lobby.
+2. Players spawn at different positions around the room.
+3. A countdown appears: 3, 2, 1, GO!
+4. The belt is available on the central pedestal.
+5. Players rush towards it.
+6. The first player to pick it up becomes the Hunter.
+
+Display:
+
+"WHO WILL GET THE BELT?"
+
+When someone collects it, show:
+
+"WE HAVE A HUNTER!"
+
+## B. LIGHTS ON — HUNT PHASE
+
+During this phase:
+
+- The room lights are fully ON.
+- The Hunter holds the belt.
+- The Hunter can chase other players.
+- Survivors must escape, dodge, jump, and hide.
+- The Hunter can swing the belt to tag players.
+
+CONTROLS:
+
+Left mouse button = Swing belt.
+
+The belt attack should have:
+
+- Short wind-up animation.
+- Swing animation.
+- Fair hit detection.
+- Cooldown after swinging.
+- Funny sound effect.
+
+When a player is hit:
+
+- Play a funny stumbling animation.
+- Briefly stun the player.
+- Add a comic impact effect.
+- Display "YOU GOT TAGGED!"
+
+Avoid realistic violence.
+
+A tagged player should be temporarily stunned rather than permanently eliminated in the initial version.
+
+## C. BLACKOUT — REVERSE HUNT PHASE
+
+THIS IS THE MOST IMPORTANT UNIQUE MECHANIC.
+
+At random intervals, the room lights switch OFF.
+
+The game should transition into a blackout phase.
+
+During blackout:
+
+- Main room lighting goes dark.
+- Hunter loses most of their visibility.
+- Hunter can still move.
+- Survivors can move freely.
+- Survivors can approach the Hunter.
+- Survivors can attempt to tag the Hunter and steal the belt.
+
+BELT STEAL MECHANIC:
+
+A survivor must get close to the Hunter and hold E for approximately 1 second.
+
+If the interaction succeeds:
+
+- The belt transfers to that player.
+- The original Hunter loses the belt.
+- A belt-steal sound plays.
+- Display a notification.
+
+"BELT STOLEN!"
+
+Only ONE successful belt steal is allowed per blackout.
+
+If nobody steals the belt, the original Hunter keeps it.
+
+IMPORTANT:
+Do not reveal the identity of the new Hunter immediately.
+
+Keep the room slightly visible during blackout so players can navigate.
+
+Do not make the screen completely black.
+
+## D. LIGHTS RETURN
+
+Before the lights return:
+
+- Play a warning buzzer.
+- Flicker the lights.
+- Give players a final 2-second warning.
+
+When lights turn ON:
+
+- Reveal the current belt-holder.
+- The belt-holder becomes the Hunter.
+- Display a large animated notification:
+
+"NEW HUNTER!"
+
+If the original Hunter still has the belt, they continue hunting.
+
+# 6. LIGHT CYCLE
+
+Start with these values:
+
+- Lights ON: 12 seconds.
+- Lights OFF: 10 seconds.
+- Warning before lights return: 2 seconds.
+- Match duration: 3–5 minutes.
+
+Add small random variations to the cycle.
+
+The timing must be controlled by the server and synchronized across all players.
+
+# 7. TAGGING AND PLAYER STATES
+
+Implement a clean player state system.
+
+Possible states:
+
+- NORMAL
+- HUNTER
+- STUNNED
+- STEALING
+- SPECTATING
+- DISCONNECTED
+
+The server should control all important player states.
+
+The Hunter can tag survivors only during Lights ON.
+
+Survivors can steal the belt only during BLACKOUT.
+
+Prevent players from abusing the attack and steal buttons.
+
+# 8. WINNING CONDITIONS
+
+Recommended initial rules:
+
+HUNTER WINS:
+The Hunter successfully tags all other active players before the match timer ends.
+
+SURVIVORS WIN:
+At least one survivor remains uncaught until the match timer expires.
+
+Keep players involved as much as possible.
+
+Do not introduce permanent elimination in the first prototype.
+
+# 9. GAME UI / HUD
+
+Create a polished cartoonish interface.
+
+The interface should look like a modern multiplayer party game.
+
+IN-GAME HUD:
+
+TOP CENTRE:
+- Current phase: LIGHTS ON / BLACKOUT.
+- Phase countdown.
+- Match countdown.
+
+TOP LEFT:
+- Number of remaining players.
+
+TOP RIGHT:
+- Current Hunter indicator when revealed.
+
+BOTTOM:
+- Contextual controls.
+- Belt swing instruction.
+- Hold E to steal belt during blackout.
+- Optional emote button.
+
+EVENT NOTIFICATIONS:
+
+- BELT PICKED UP!
+- HUNTER SELECTED!
+- LIGHTS OUT!
+- HIDE!
+- STEAL THE BELT!
+- BELT STOLEN!
+- NEW HUNTER!
+- YOU GOT TAGGED!
+- HUNTER WINS!
+- SURVIVORS WIN!
+
+Use playful animations for notifications.
+
+# 10. MAIN MENU
+
+Create an attractive main menu.
+
+The main menu should contain:
+
+- Large BELT PANIC! logo.
+- PLAY button.
+- CHARACTER button.
+- SETTINGS button.
+- HOW TO PLAY button.
+
+Background:
+
+Show a colourful 3D preview of the arena.
+
+Add a few cartoon characters running around in the background.
+
+Use subtle character animations.
+
+# 11. CHARACTER CUSTOMISATION
+
+Create a character selection screen.
+
+Allow players to choose:
+
+- Character colour.
+- Different skins.
+- Hats.
+- Accessories.
+- Face styles.
+
+Possible future skins:
+
+- Banana.
+- Robot.
+- Chicken.
+- Alien.
+- Astronaut.
+- Ninja.
+- Dinosaur.
+
+For the initial version, basic colour selection is sufficient.
+
+# 12. MULTIPLAYER REQUIREMENTS
+
+This MUST be genuine multiplayer.
+
+Target: 4–10 real players in one room.
+
+Do not create fake multiplayer by spawning locally controlled duplicate characters.
+
+Use an authoritative server architecture.
+
+The server must control:
+
+- Player connections.
+- Player spawning.
+- Belt ownership.
+- Hunter identity.
+- Lights ON/OFF state.
+- Phase timers.
+- Belt attacks.
+- Hit detection validation.
+- Belt stealing.
+- Player stun states.
+- Match results.
+
+All clients must receive synchronized updates.
+
+When one player steals the belt, every other player must see the ownership change.
+
+When the lights turn OFF, they must turn OFF for everyone at the same time.
+
+When the lights return, everyone must see the same Hunter.
+
+Handle disconnects without breaking the match.
+
+If the project is currently using a local-only setup, implement a proper networking solution rather than pretending multiplayer works.
+
+# 13. TECHNICAL STACK
+
+First inspect the existing project.
+
+If the project is empty, choose one consistent architecture.
+
+For a browser-based 3D game, a possible stack is:
+
+- React.
+- Three.js / React Three Fiber.
+- Rapier physics.
+- An authoritative multiplayer server.
+- WebSocket-based state synchronization or an appropriate multiplayer framework.
+
+Alternatively, use Godot if the project is better suited to a standalone game.
+
+Do not combine unrelated engines.
+
+Choose a stack based on the actual project and explain the decision briefly.
+
+# 14. GRAPHICS AND PERFORMANCE
+
+The game must be:
+
+- Low-poly.
+- Colourful.
+- Cartoonish.
+- Smooth.
+- Optimised.
+- Lightweight.
+
+Use:
+
+- Simple geometry.
+- Efficient materials.
+- Soft shadows.
+- Limited dynamic lighting.
+- Optimised collisions.
+- Reusable assets.
+- Efficient animations.
+
+Target smooth gameplay on ordinary computers.
+
+Do not create unnecessarily detailed environments.
+
+# 15. DEVELOPMENT ORDER
+
+Do not try to build everything in one untested step.
+
+Build in these stages:
+
+STAGE 1:
+- Create the 3D arena.
+- Create one controllable character.
+- Implement third-person camera.
+- Implement WASD movement.
+- Implement jumping.
+- Add basic collision.
+
+STAGE 2:
+- Add the central belt.
+- Implement belt pickup.
+- Implement Hunter selection.
+- Implement belt swing.
+- Implement hit detection.
+
+STAGE 3:
+- Implement Lights ON.
+- Implement BLACKOUT.
+- Implement belt stealing.
+- Implement belt ownership transfer.
+- Implement synchronized phase timers.
+
+STAGE 4:
+- Implement real multiplayer.
+- Add lobby.
+- Add player spawning.
+- Add synchronization.
+- Test with multiple actual clients.
+
+STAGE 5:
+- Add character animations.
+- Add arena props.
+- Add sound effects.
+- Add HUD.
+- Add main menu.
+- Add character customisation.
+
+STAGE 6:
+- Test all mechanics.
+- Fix bugs.
+- Optimise performance.
+- Polish visual effects.
+
+# 16. IMPORTANT DEVELOPMENT INSTRUCTIONS
+
+Before coding:
+
+1. Inspect all existing project files.
+2. Understand the current framework.
+3. Identify existing dependencies.
+4. Do not delete working code unnecessarily.
+5. Do not rebuild the architecture without a good reason.
+6. Create a clear implementation plan.
+7. Start implementing the playable prototype.
+
+Do not just create a beautiful static scene.
+
+The first milestone must be playable.
+
+Do not use placeholder buttons that do nothing.
+
+Do not claim multiplayer is working until it has been tested using multiple independent clients.
+
+Keep gameplay logic modular and maintainable.
+
+Test each major feature before proceeding.
+
+# FINAL DESIGN REQUIREMENTS
+
+The finished game must have:
+
+- Third-person camera.
+- No top-down gameplay.
+- Bright cartoonish 3D graphics.
+- Funny chunky characters.
+- One central belt.
+- One Hunter at a time.
+- Lights ON hunting phase.
+- BLACKOUT belt-stealing phase.
+- Dynamic Hunter switching.
+- Compact interactive arena.
+- Genuine multiplayer.
+- Smooth movement.
+- Funny animations.
+- Colourful UI.
+- Fast, chaotic party-game gameplay.
+
+The central experience should always be:
+
+RUN → HIDE → BLACKOUT → STEAL → NEW HUNTER → RUN AGAIN!
+
+Make BELT PANIC! feel like a polished, hilarious multiplayer party game that people want to replay with their friends.
